@@ -12,7 +12,8 @@ return {
     -- },
     'iabdelkareem/csharp.nvim',
     dependencies = {
-      { 'williamboman/mason.nvim', opts = { ensure_installed = { 'csharpier', 'netcoredbg' } } },
+      'williamboman/mason.nvim',
+      -- { 'williamboman/mason.nvim', opts = { ensure_installed = { 'csharpier', 'netcoredbg', 'omnisharp' } } },
       'mfussenegger/nvim-dap',
       'Tastyep/structlog.nvim', -- Optional, but highly recommended for debugging
     },
