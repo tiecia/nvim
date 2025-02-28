@@ -714,6 +714,9 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'roslyn', -- C# Language Server
+        'rzls', -- Razor Language Server
+        'html-lsp', -- Razor Language Server
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -913,8 +916,38 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
     end,
+    {
+      'jacoborus/tender.vim',
+      priority = 1000,
+    },
+    {
+      'ellisonleao/gruvbox.nvim',
+      priority = 1000,
+      config = function()
+        -- vim.cmd.colorscheme 'gruvbox'
+      end,
+      opts = ...,
+    },
+    {
+      'xiantang/darcula-dark.nvim',
+      priority = 1000,
+    },
+    {
+      'gmr458/vscode_modern_theme.nvim',
+      lazy = false,
+      priority = 1000,
+      config = function()
+        require('vscode_modern').setup {
+          cursorline = true,
+          transparent_background = false,
+          nvim_tree_darker = true,
+          telescope = false,
+          vim.cmd.colorscheme 'vscode_modern',
+        }
+      end,
+    },
   },
 
   -- Highlight todo, notes, etc in comments
