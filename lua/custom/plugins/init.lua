@@ -5,6 +5,38 @@ local ensure_installed = require 'mason-lspconfig.ensure_installed'
 -- See the kickstart.nvim README for more information
 
 return {
+
+  {
+    'nvim-neotest/neotest',
+    dependencies = {
+      'nvim-neotest/nvim-nio',
+      'nvim-lua/plenary.nvim',
+      'antoinemadec/FixCursorHold.nvim',
+      'nvim-treesitter/nvim-treesitter',
+      'Issafalcon/neotest-dotnet',
+      'mortepau/codicons.nvim',
+    },
+    config = function()
+      require('neotest').setup {
+        adapters = {
+          require 'neotest-dotnet',
+          -- require 'neotest-plenary',
+        },
+      }
+
+      local neotest = require 'neotest'
+      vim.keymap.set('n', '<leader>tr', function()
+        print 'Run closest test'
+        neotest.run.run()
+      end, { desc = '[T]est [R]un Closest Test' })
+
+      vim.keymap.set('n', '<leader>tt', function()
+        print 'Toggle test window'
+        neotest.summary.toggle()
+      end, { desc = 'Open test summary' })
+    end,
+  },
+
   {
     'seblyng/roslyn.nvim',
     ft = { 'cs', 'razor' },
