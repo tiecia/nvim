@@ -191,6 +191,9 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 vim.keymap.set('n', '<leader>p', vim.cmd.Ex, { desc = 'Open file explorer' })
 
+-- Use relative line numbers
+vim.opt.relativenumber = true
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
