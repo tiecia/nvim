@@ -935,17 +935,10 @@ require('lazy').setup({
       priority = 1000,
     },
     {
-      'gmr458/vscode_modern_theme.nvim',
-      lazy = false,
+      'LunarVim/darkplus.nvim',
       priority = 1000,
       config = function()
-        require('vscode_modern').setup {
-          cursorline = true,
-          transparent_background = false,
-          nvim_tree_darker = true,
-          telescope = false,
-          vim.cmd.colorscheme 'vscode_modern',
-        }
+        vim.cmd.colorscheme 'darkplus'
       end,
     },
   },
@@ -1026,7 +1019,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
