@@ -1,5 +1,19 @@
 return {
   {
+
+    -- lazy.nvim
+    -- {
+    --   'GustavEikaas/easy-dotnet.nvim',
+    --   dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
+    --   config = function()
+    --     require('easy-dotnet').setup {
+    --       mappings = {
+    --         run = { lhs = '<leader>dr', desc = 'Run test easy-dotnet' },
+    --       },
+    --     }
+    --   end,
+    -- },
+
     'seblyng/roslyn.nvim',
     ft = { 'cs', 'razor' },
     dependencies = {
