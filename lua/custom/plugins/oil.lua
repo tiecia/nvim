@@ -9,6 +9,10 @@ return {
   -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
   lazy = false,
   config = function()
-    vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
+    local oil = require 'oil'
+    oil.setup()
+    vim.keymap.set('n', '<leader>p', function()
+      oil.open()
+    end, { desc = 'Open file explorer' })
   end,
 }
