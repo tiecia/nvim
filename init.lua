@@ -725,6 +725,7 @@ require('lazy').setup({
         'roslyn', -- C# Language Server
         'rzls', -- Razor Language Server
         'html-lsp', -- Razor Language Server
+        'typescript-language-server',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
