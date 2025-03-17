@@ -726,6 +726,8 @@ require('lazy').setup({
         'rzls', -- Razor Language Server
         'html-lsp', -- Razor Language Server
         'typescript-language-server',
+        'jedi-language-server',
+        'rust-analyzer',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
