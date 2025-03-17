@@ -6,5 +6,12 @@ return {
   opts = {
     -- your config goes here
     -- or just leave it empty :)
+    condition = function(buf)
+      -- Exclude oil.nvim buffers
+      if vim.api.nvim_buf_get_name(buf) == '' or vim.api.nvim_buf_get_name(buf):match '^oil-' then
+        return false
+      end
+      return true
+    end,
   },
 }
