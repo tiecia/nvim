@@ -17,11 +17,7 @@
       in
       {
         homeManagerModules.default = {
-	  options = {
-      	    tiecia-nvim.enable = lib.mkEnableOption "Enable tiecia-nvim";
-          };
-
-          config = lib.mkIf config.nvim.enable {
+          config = {
             home.packages = [
               # Dependencies as defined in kickstart.nvim
               pkgs.git
