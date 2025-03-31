@@ -1,5 +1,5 @@
 {
-  description = "A basic flake with a shell";
+  description = "tiecia's neovim configuration";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   inputs.systems.url = "github:nix-systems/default";
   inputs.flake-utils = {
@@ -16,6 +16,32 @@
 
       in
       {
+        homeManagerModules.default = {
+          config = {
+            home.packages = [
+              # Dependencies as defined in kickstart.nvim
+              pkgs.git
+              pkgs.gnumake
+              pkgs.unzip
+              pkgs.gcc
+              pkgs.ripgrep
+              pkgs.xclip
+              pkgs.binutils
+
+              neovim
+            ];
+
+            programs.bash = {
+              enable = true;
+              shellAliases = {
+                vi = "${neovim}/bin/nvim";
+                v = "${neovim}/bin/nvim";
+              };
+              sessionVariables = {EDITOR = "${neovim}/bin/nvim";};
+            };
+          }
+        };
+
         packages = rec {
           neovim = pkgs.stdenv.mkDerivation {
             name = "tiecia-neovim";
