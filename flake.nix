@@ -13,7 +13,7 @@
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-
+        neovim = pkgs.neovim;
       in
       {
         homeManagerModules.default = {
@@ -27,8 +27,6 @@
               pkgs.ripgrep
               pkgs.xclip
               pkgs.binutils
-
-              neovim
             ];
 
             programs.bash = {
