@@ -39,7 +39,7 @@
               };
               sessionVariables = {EDITOR = "${neovim}/bin/nvim";};
             };
-          }
+          };
         };
 
         packages = rec {
