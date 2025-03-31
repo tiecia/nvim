@@ -16,9 +16,8 @@
         neovim = pkgs.neovim;
       in
       {
-        homeManagerModules.default =
-          { pkgs, ... }@args:
-          {
+        homeManagerModules.default = {
+          config = {
             home.packages = [
               # Dependencies as defined in kickstart.nvim
               pkgs.git
@@ -39,32 +38,7 @@
               sessionVariables = {EDITOR = "${neovim}/bin/nvim";};
             };
           };
-
-        # homeManagerModules.default = {
-        #   config = 
-        #     {pkgs, ...}:
-        #     {
-        #       home.packages = [
-        #         # Dependencies as defined in kickstart.nvim
-        #         pkgs.git
-        #         pkgs.gnumake
-        #         pkgs.unzip
-        #         pkgs.gcc
-        #         pkgs.ripgrep
-        #         pkgs.xclip
-        #         pkgs.binutils
-        #       ];
-        #
-        #       programs.bash = {
-        #         enable = true;
-        #         shellAliases = {
-        #           vi = "${neovim}/bin/nvim";
-        #           v = "${neovim}/bin/nvim";
-        #         };
-        #         sessionVariables = {EDITOR = "${neovim}/bin/nvim";};
-        #       };
-        #   };
-        # };
+        };
 
         packages = rec {
           neovim = pkgs.stdenv.mkDerivation {
