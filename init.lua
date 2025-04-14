@@ -729,6 +729,7 @@ require('lazy').setup({
         'jedi-language-server',
         'rust-analyzer',
         'nil_ls',
+        'dcm',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
