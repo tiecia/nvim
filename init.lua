@@ -777,6 +777,17 @@ require('lazy').setup({
         else
           lsp_format_opt = 'fallback'
         end
+
+        local file_path = vim.api.nvim_buf_get_name(bufnr)
+        local excluded_dirs = {
+          '/rosepoint/',
+        }
+        for _, dir in ipairs(excluded_dirs) do
+          if file_path:find(dir, 1, true) then
+            lsp_format_opt = 'never'
+          end
+        end
+
         return {
           timeout_ms = 500,
           lsp_format = lsp_format_opt,
