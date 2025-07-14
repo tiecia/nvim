@@ -481,6 +481,7 @@ require('lazy').setup({
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
       {
         'williamboman/mason.nvim',
+        version = '^1.0.0',
         opts = {
           registries = {
             'github:mason-org/mason-registry',
@@ -488,7 +489,10 @@ require('lazy').setup({
           },
         },
       },
-      'williamboman/mason-lspconfig.nvim',
+      {
+        'williamboman/mason-lspconfig.nvim',
+        version = '^1.0.0',
+      },
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
