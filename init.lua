@@ -156,8 +156,20 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
-vim.cmd 'set shiftwidth=4'
-vim.cmd 'set tabstop=4'
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
+-- vim.cmd 'set shiftwidth=4'
+-- vim.cmd 'set tabstop=4'
+--
+-- vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
+--   callback = function(ev)
+--     -- ev.buf, ev.file, ev.match, etc. are available
+--     vim.notify('Opened: ' .. vim.api.nvim_buf_get_name(ev.buf), 0, nil)
+--     vim.cmd 'set shiftwidth=4'
+--     vim.cmd 'set tabstop=4'
+--   end,
+-- })
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -234,7 +246,7 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  -- 'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -732,7 +744,7 @@ require('lazy').setup({
         'typescript-language-server',
         'jedi-language-server',
         'rust-analyzer',
-        'nil_ls',
+        -- 'nil_ls',
         'dcm',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
