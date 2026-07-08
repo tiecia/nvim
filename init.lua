@@ -739,8 +739,14 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
         'roslyn', -- C# Language Server
-        'rzls', -- Razor Language Server
-        'html-lsp', -- Razor Language Server
+        -- NOTE: `rzls` (Razor Language Server) was removed from the
+        -- Crashdummyy/mason-registry index, so mason can no longer install it and
+        -- mason-tool-installer errors on startup if it's listed here. The package
+        -- is already installed on disk (mason/packages/rzls) and is still used by
+        -- the roslyn.nvim config in lua/custom/plugins/dotnet.lua, so we just stop
+        -- trying to (re)install it rather than removing it.
+        -- 'rzls', -- Razor Language Server
+        'html-lsp',
         'typescript-language-server',
         'jedi-language-server',
         'rust-analyzer',
@@ -759,7 +765,8 @@ require('lazy').setup({
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
+            vim.lsp.config(server_name, server)
+            vim.lsp.enable(server_name)
           end,
         },
       }
@@ -1025,6 +1032,9 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    -- Pin to the `master` branch; the `main` branch is a rewrite with a different
+    -- (incompatible) API and no longer exposes `nvim-treesitter.configs`.
+    branch = 'master',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
