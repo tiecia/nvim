@@ -1,4 +1,4 @@
-<script lang="ts" module>
+<script lang="ts">
 	interface Props {}
 
 	let {}: Props = $props();

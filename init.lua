@@ -84,6 +84,16 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+-- Cache compiled Lua modules to reduce startup overhead.
+vim.loader.enable()
+
+-- This configuration has no legacy remote plugins. Avoid probing for provider
+-- hosts that would otherwise only add optional checkhealth warnings.
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -212,19 +222,19 @@ vim.opt.relativenumber = true
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
+--  See `:help vim.hl.on_yank()`
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
   if vim.v.shell_error ~= 0 then
@@ -364,7 +374,9 @@ require('lazy').setup({
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
-    branch = '0.1.x',
+    -- `0.1.x` calls the removed nvim-treesitter.parsers.ft_to_lang API on
+    -- current Neovim/Tree-sitter. Track Telescope's maintained branch instead.
+    branch = 'master',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -492,8 +504,7 @@ require('lazy').setup({
       -- Mason must be loaded before its dependents so we need to set it up here.
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
       {
-        'williamboman/mason.nvim',
-        version = '^1.0.0',
+        'mason-org/mason.nvim',
         opts = {
           registries = {
             'github:mason-org/mason-registry',
@@ -502,8 +513,7 @@ require('lazy').setup({
         },
       },
       {
-        'williamboman/mason-lspconfig.nvim',
-        version = '^1.0.0',
+        'mason-org/mason-lspconfig.nvim',
       },
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -593,26 +603,13 @@ require('lazy').setup({
           --  For example, in C this would take you to the header.
           map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
 
-          -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
-          ---@param client vim.lsp.Client
-          ---@param method vim.lsp.protocol.Method
-          ---@param bufnr? integer some lsp support methods only in specific files
-          ---@return boolean
-          local function client_supports_method(client, method, bufnr)
-            if vim.fn.has 'nvim-0.11' == 1 then
-              return client:supports_method(method, bufnr)
-            else
-              return client.supports_method(method, { bufnr = bufnr })
-            end
-          end
-
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
           --    See `:help CursorHold` for information about when this is executed
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -639,7 +636,7 @@ require('lazy').setup({
           -- code, if the language server you are using supports them
           --
           -- This may be unwanted, since they displace some of your code
-          if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
+          if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, '[T]oggle Inlay [H]ints')
@@ -720,6 +717,74 @@ require('lazy').setup({
             },
           },
         },
+        html = {},
+        jedi_language_server = {},
+        rust_analyzer = {},
+        svelte = {
+          settings = {
+            svelte = {
+              compilerWarnings = {
+                ['a11y-missing-attribute'] = 'error',
+              },
+            },
+            typescript = {
+              preferences = {
+                quoteStyle = 'auto',
+              },
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = true },
+                parameterNames = {
+                  enabled = 'none',
+                  suppressWhenArgumentMatchesName = true,
+                },
+                parameterTypes = { enabled = true },
+                propertyDeclarationTypes = { enabled = true },
+                variableTypes = { enabled = true },
+              },
+            },
+            html = {
+              completions = {
+                emmet = true,
+              },
+            },
+          },
+        },
+        tailwindcss = {
+          filetypes = {
+            'css',
+            'html',
+            'javascript',
+            'javascriptreact',
+            'less',
+            'razor',
+            'sass',
+            'scss',
+            'svelte',
+            'typescript',
+            'typescriptreact',
+          },
+          settings = {
+            tailwindCSS = {
+              experimental = {
+                classRegex = {
+                  'class:([a-zA-Z0-9_-]+)',
+                },
+              },
+            },
+          },
+        },
+        ts_ls = {
+          settings = {
+            typescript = {
+              inlayHints = {
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayParameterNameHints = 'none',
+                includeInlayVariableTypeHints = true,
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -739,37 +804,21 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
         'roslyn', -- C# Language Server
-        -- NOTE: `rzls` (Razor Language Server) was removed from the
-        -- Crashdummyy/mason-registry index, so mason can no longer install it and
-        -- mason-tool-installer errors on startup if it's listed here. The package
-        -- is already installed on disk (mason/packages/rzls) and is still used by
-        -- the roslyn.nvim config in lua/custom/plugins/dotnet.lua, so we just stop
-        -- trying to (re)install it rather than removing it.
-        -- 'rzls', -- Razor Language Server
-        'html-lsp',
-        'typescript-language-server',
-        'jedi-language-server',
-        'rust-analyzer',
-        -- 'nil_ls',
+        'netcoredbg', -- .NET debug adapter
         'dcm',
       })
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-        automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            vim.lsp.config(server_name, server)
-            vim.lsp.enable(server_name)
-          end,
-        },
+        automatic_enable = false,
       }
+
+      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
+      for server_name, server in pairs(servers) do
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        vim.lsp.config(server_name, server)
+        vim.lsp.enable(server_name)
+      end
     end,
   },
 
@@ -945,57 +994,22 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'LunarVim/darkplus.nvim',
+    priority = 1000,
     config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'darkplus'
     end,
-    {
-      'jacoborus/tender.vim',
-      priority = 1000,
-    },
-    {
-      'ellisonleao/gruvbox.nvim',
-      priority = 1000,
-      config = function()
-        -- vim.cmd.colorscheme 'gruvbox'
-      end,
-      opts = ...,
-    },
-    {
-      'xiantang/darcula-dark.nvim',
-      priority = 1000,
-    },
-    {
-      'LunarVim/darkplus.nvim',
-      priority = 1000,
-      config = function()
-        vim.cmd.colorscheme 'darkplus'
-      end,
-    },
   },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
   { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
+    'nvim-mini/mini.nvim',
     config = function()
+      require('mini.icons').setup()
+
       -- Better Around/Inside textobjects
       --
       -- Examples:
@@ -1027,7 +1041,7 @@ require('lazy').setup({
       end
 
       -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
+      --  Check out: https://github.com/nvim-mini/mini.nvim
     end,
   },
   { -- Highlight, edit, and navigate code
@@ -1039,7 +1053,27 @@ require('lazy').setup({
     build = ':TSUpdate',
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'c_sharp',
+        'css',
+        'diff',
+        'html',
+        'javascript',
+        'json',
+        'jsdoc',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'svelte',
+        'tsx',
+        'typescript',
+        'vim',
+        'vimdoc',
+      },
     },
     config = function(_, opts)
       local treesitter = require 'nvim-treesitter'
@@ -1051,7 +1085,9 @@ require('lazy').setup({
       vim.api.nvim_create_autocmd('FileType', {
         group = vim.api.nvim_create_augroup('kickstart-treesitter', { clear = true }),
         callback = function(event)
-          if pcall(vim.treesitter.start, event.buf) and vim.bo[event.buf].filetype ~= 'ruby' then
+          local language = vim.treesitter.language.get_lang(vim.bo[event.buf].filetype)
+          local has_indent_query = language and vim.treesitter.query.get(language, 'indents') ~= nil
+          if pcall(vim.treesitter.start, event.buf) and has_indent_query and vim.bo[event.buf].filetype ~= 'ruby' then
             vim.bo[event.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
           end
         end,
@@ -1092,6 +1128,7 @@ require('lazy').setup({
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
 }, {
+  rocks = { enabled = false },
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table

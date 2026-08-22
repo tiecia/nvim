@@ -1,6 +1,6 @@
-namespace {{_cursor_}}
+namespace {{_cursor_}};
 
-public class {{_file_name_}} 
+public class {{_file_name_}}
 {
 
 }
