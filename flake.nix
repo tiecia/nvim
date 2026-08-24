@@ -65,6 +65,7 @@
             version = "0-unstable";
             src = self;
             nativeBuildInputs = [ pkgs.makeWrapper ];
+            dontBuild = true;
 
             installPhase = ''
               runHook preInstall
@@ -82,9 +83,34 @@
         }
       );
 
-      checks = forAllSystems (system: {
-        package = self.packages.${system}.default;
-      });
+      checks = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          package = self.packages.${system}.default;
+
+          formatting = pkgs.runCommand "neovim-config-formatting" { nativeBuildInputs = [ pkgs.stylua ]; } ''
+            stylua --check ${self}
+            touch "$out"
+          '';
+
+          lua-diagnostics =
+            pkgs.runCommand "neovim-config-lua-diagnostics"
+              { nativeBuildInputs = [ pkgs.lua-language-server ]; }
+              ''
+                mkdir -p diagnostics/log diagnostics/meta "$out"
+                lua-language-server \
+                  --check=${self} \
+                  --checklevel=Warning \
+                  --check_format=pretty \
+                  --configpath=${self}/.luarc.json \
+                  --logpath=diagnostics/log \
+                  --metapath=diagnostics/meta
+              '';
+        }
+      );
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
       devShells = forAllSystems (

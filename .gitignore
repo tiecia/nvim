@@ -1,7 +1,9 @@
 tags
 test.sh
-.luarc.json
 nvim
+
+# Optional machine-local overrides loaded by lua/config/profile.lua.
+lua/config/local.lua
 
 spell/
 .direnv

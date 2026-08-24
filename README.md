@@ -1,9 +1,9 @@
 # Neovim configuration
 
-My personal Neovim configuration, originally based on
-[kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim). It targets
-Neovim 0.12 or newer and uses lazy.nvim for plugins, Mason for external editor
-tools, and the native `vim.lsp.config` API for language servers.
+Personal Neovim configuration targeting Neovim 0.12 or newer. It uses
+[lazy.nvim](https://github.com/folke/lazy.nvim) for plugins, Mason for editor
+tooling, the native `vim.lsp.config` API, and Nix for a reproducible development
+and packaged environment.
 
 ## Requirements
 
@@ -12,67 +12,85 @@ The baseline tools are:
 - Neovim 0.12 or newer
 - `git`, `make`, `unzip`, and a C compiler
 - `ripgrep`, `fd`, and the Tree-sitter CLI
-- a clipboard provider appropriate for the operating system
-- a Nerd Font if `vim.g.have_nerd_font` is enabled in `init.lua`
+- A clipboard provider appropriate for the operating system
 
-Language-specific features also need their normal runtimes and build tools. In
-particular, this configuration supports .NET/C# and Razor, Java, Rust,
-TypeScript/Svelte, and Flutter/Dart. Install the .NET 10 SDK (or newer), a JDK,
-Cargo, Node.js/npm, and the Flutter SDK for the languages you use. Mason installs the
-corresponding language servers, formatters, and `netcoredbg` where possible.
+Language integrations require their normal runtimes. Install the .NET SDK, a
+JDK, Cargo, Node.js/npm, and Flutter for the languages you use. Mason installs
+the configured language servers, formatters, and debug adapters.
 
 ## Install
 
-Back up an existing Neovim configuration, then clone this repository:
+Back up an existing configuration and clone this repository:
 
 ```sh
 git clone https://github.com/tiecia/nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
 nvim
 ```
 
-On the first launch, lazy.nvim installs plugins and Mason installs the tools
-listed in `init.lua`. Run these commands afterward to inspect the result:
+On first launch, lazy.nvim installs the plugins pinned in `lazy-lock.json`.
+Inspect the installation with `:Lazy`, `:Mason`, and `:checkhealth config`.
 
-```vim
-:Lazy
-:Mason
-:checkhealth
+## Architecture
+
+```text
+init.lua                 Minimal entry point
+lua/config/              Core editor behavior and shared configuration data
+lua/plugins/             Active plugin specifications, grouped by responsibility
+lua/plugins/lang/        Integrations requiring language-specific orchestration
+templates/               New-file templates
+scripts/                 Reproducible diagnostics and startup checks
 ```
 
-`lazy-lock.json` is committed so a checkout uses the same tested plugin
-revisions. Run `:Lazy restore` if a local plugin tree drifts from the lockfile.
+`lua/config/languages.lua` is the shared inventory for general LSP servers,
+Mason tools, formatters, and Tree-sitter parsers. More involved integrations,
+such as Roslyn, Java, Flutter, DAP, and .NET testing, have dedicated modules
+under `lua/plugins/lang/`.
+
+Neovim 0.12 handles injected-language comment strings natively, including
+Svelte script and style regions, so the configuration does not patch Neovim's
+filetype APIs.
+
+## Local profile
+
+Personal defaults and named machine-specific policy live in
+`lua/config/profile.lua`. To override them on one machine, create the ignored
+`lua/config/local.lua` module. Its values are deeply merged with the defaults:
+
+```lua
+return {
+  have_nerd_font = true,
+  formatting = {
+    excluded_path_fragments = {},
+  },
+  java = {
+    home_candidates = { '/path/to/jdk' },
+  },
+}
+```
+
+## Verification and maintenance
+
+The standard commands are:
+
+```sh
+make format        # Format all Lua through the pinned Nix environment
+make check         # Formatting, diagnostics, startup smoke test, and flake checks
+make smoke         # Start the configuration headlessly
+make health        # Run this configuration's health check
+make update        # Update plugins and Nix inputs
+```
+
+`lazy-lock.json` is committed so checkouts use tested plugin revisions. Review
+plugin changes before committing an updated lockfile. CI runs the same local
+formatting, diagnostic, startup, and Nix checks on pushes and pull requests.
 
 ## Nix
 
-The flake supplies the baseline tools and can run this configuration in an
-isolated Neovim app name:
+The flake supplies baseline command-line tools and can run the configuration
+under an isolated Neovim app name:
 
 ```sh
 nix run github:tiecia/nvim
 ```
 
-It also exports `homeModules.default`. A Home Manager flake can import it with:
-
-```nix
-{
-  inputs.nvim.url = "github:tiecia/nvim";
-
-  outputs = { home-manager, nvim, ... }: {
-    # Add nvim.homeModules.default to the modules for your home configuration.
-  };
-}
-```
-
-## Maintenance
-
-- Update plugins with `:Lazy update`, review the changes, and commit the updated
-  `lazy-lock.json`.
-- Update Mason-managed tools with `:MasonUpdate` and `:MasonToolsUpdate`.
-- Update parsers with `:TSUpdate`.
-- Update Nix inputs with `nix flake update`.
-- Check Lua formatting with `stylua --check init.lua lua`.
-- Run `:checkhealth` after Neovim or toolchain upgrades.
-
-The main plugin and editor configuration lives in `init.lua`. Feature-specific
-plugins live under `lua/custom/plugins/`, reusable modules under
-`lua/kickstart/`, and new-file templates under `templates/`.
+It also exports `homeModules.default` for Home Manager configurations.
