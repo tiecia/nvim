@@ -40,6 +40,10 @@
           programs.neovim = {
             enable = true;
             defaultEditor = true;
+            # Mason needs npm for language servers; do not add Node.js to the user's PATH.
+            extraWrapperArgs = [
+              "--prefix" "PATH" ":" "${pkgs.nodejs}/bin"
+            ];
           };
 
           programs.bash.shellAliases = {
@@ -74,7 +78,7 @@
               makeWrapper ${pkgs.neovim}/bin/nvim "$out/bin/nvim" \
                 --set XDG_CONFIG_HOME "$out/share/nvim-config" \
                 --set NVIM_APPNAME nvim-tiecia \
-                --prefix PATH : ${pkgs.lib.makeBinPath (runtimeTools pkgs)}
+                --prefix PATH : ${pkgs.lib.makeBinPath ([ pkgs.nodejs ] ++ runtimeTools pkgs)}
               runHook postInstall
             '';
 
@@ -121,6 +125,7 @@
         {
           default = pkgs.mkShell {
             packages = runtimeTools pkgs ++ [
+              pkgs.nodejs
               pkgs.lua-language-server
               pkgs.neovim
               pkgs.stylua

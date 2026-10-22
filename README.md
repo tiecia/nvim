@@ -93,4 +93,6 @@ under an isolated Neovim app name:
 nix run github:tiecia/nvim
 ```
 
-It also exports `homeModules.default` for Home Manager configurations.
+It also exports `homeModules.default` for Home Manager configurations. Both the
+Home Manager module and the isolated `nix run` app make Node.js/npm available to
+Neovim for Mason installs without adding Node.js to your regular shell PATH.
